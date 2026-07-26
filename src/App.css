@@ -1,0 +1,27 @@
+main {
+  position: relative;
+}
+
+@media (max-width: 420px) {
+  button,
+  textarea,
+  input {
+    font-size: 16px;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  body::before,
+  body::after {
+    display: none;
+  }
+
+  button {
+    display: none !important;
+  }
+}
