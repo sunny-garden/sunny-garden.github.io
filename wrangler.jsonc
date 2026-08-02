@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sunny-garden-letter-location-api",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2026-08-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://sunny-garden.github.io"
+  },
+  "d1_databases": [
+    {
+      "binding": "LOCATIONS",
+      "database_name": "sunny-garden-letter-locations",
+      "database_id": "210d8912-629f-42db-b093-a4c9b28f572d",
+      "migrations_dir": "worker/migrations"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "head_sampling_rate": 1
+    }
+  }
+}

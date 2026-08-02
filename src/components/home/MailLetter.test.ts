@@ -41,4 +41,19 @@ describe('MailLetter layout contract', () => {
     expect(source).toContain("playUiSound('transition')")
     expect(source).toContain("playUiSound('click')")
   })
+
+  it('captures location once before revealing the paper', () => {
+    expect(source).toContain("import { captureLetterLocation } from '../../services/locationCapture'")
+    expect(source).toContain('const locationRequestRef = useRef<Promise<unknown> | null>(null)')
+    expect(source).toContain('const revealPendingRef = useRef(false)')
+
+    const revealStart = source.indexOf('const showLetter = useCallback(async () =>')
+    const revealEnd = source.indexOf('const closeLetter', revealStart)
+    const revealHandler = source.slice(revealStart, revealEnd)
+
+    expect(revealStart).toBeGreaterThan(-1)
+    expect(revealHandler.indexOf('await locationRequestRef.current')).toBeGreaterThan(-1)
+    expect(revealHandler.indexOf("setStage((current) => (current === 'opened' ? 'letter' : current))"))
+      .toBeGreaterThan(revealHandler.indexOf('await locationRequestRef.current'))
+  })
 })

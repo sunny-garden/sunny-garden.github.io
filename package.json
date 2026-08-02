@@ -12,7 +12,12 @@
     "test": "vitest run",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages --dotfiles --nojekyll -d dist"
+    "deploy": "gh-pages --dotfiles --nojekyll -d dist",
+    "worker:dev": "wrangler dev",
+    "worker:test": "vitest run worker/src/index.test.ts",
+    "worker:typecheck": "tsc -p worker/tsconfig.json",
+    "worker:types": "wrangler types",
+    "worker:deploy": "wrangler deploy"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",
@@ -23,6 +28,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
+    "@cloudflare/workers-types": "^5.20260801.1",
     "@eslint/js": "^10.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@types/babel__core": "^7.20.5",
@@ -39,6 +45,7 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "wrangler": "^4.118.0"
   }
 }

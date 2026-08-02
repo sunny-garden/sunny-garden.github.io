@@ -4,6 +4,7 @@ import styled, { keyframes } from 'styled-components'
 import letterClosedUrl from '../../../images/letter-closed.png'
 import letterOpenedUrl from '../../../images/letter-opened.png'
 import paperUrl from '../../../images/paper.png'
+import { captureLetterLocation } from '../../services/locationCapture'
 import { playUiSound } from '../../services/soundEffects'
 
 type MailStage = 'closed' | 'opened' | 'letter'
@@ -13,15 +14,28 @@ const MailLetter = () => {
   const reduceMotion = useReducedMotion()
   const openerRef = useRef<HTMLButtonElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const locationRequestRef = useRef<Promise<unknown> | null>(null)
+  const revealPendingRef = useRef(false)
 
   const openEnvelope = useCallback(() => {
     playUiSound('select')
     setStage((current) => (current === 'closed' ? 'opened' : current))
   }, [])
 
-  const showLetter = useCallback(() => {
+  const showLetter = useCallback(async () => {
+    if (revealPendingRef.current) {
+      return
+    }
+
+    revealPendingRef.current = true
     playUiSound('transition')
-    setStage((current) => (current === 'opened' ? 'letter' : current))
+    try {
+      locationRequestRef.current ??= captureLetterLocation().catch(() => undefined)
+      await locationRequestRef.current
+      setStage((current) => (current === 'opened' ? 'letter' : current))
+    } finally {
+      revealPendingRef.current = false
+    }
   }, [])
 
   const closeLetter = useCallback(() => {
@@ -31,14 +45,8 @@ const MailLetter = () => {
   }, [])
 
   const handleOpenedComplete = useCallback(() => {
-    setStage((current) => {
-      if (current !== 'opened') {
-        return current
-      }
-      playUiSound('transition')
-      return 'letter'
-    })
-  }, [])
+    void showLetter()
+  }, [showLetter])
 
   useEffect(() => {
     if (stage !== 'letter') return
