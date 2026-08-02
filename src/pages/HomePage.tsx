@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import styled, { keyframes } from 'styled-components'
 import RoseBouquet from '../components/home/RoseBouquet'
+import MailLetter from '../components/home/MailLetter'
 import LyricOverlay from '../components/proposal/LyricOverlay'
 import { audioPaths } from '../data/proposalContent'
 import { songLyrics } from '../data/songLyrics'
@@ -156,6 +157,8 @@ const HomePage = () => {
         <RoseBouquet presented={presented} />
       </BouquetStage>
 
+      {presented && <MailLetter />}
+
       {stage === 'playing' && (
         <SongOverlay>
           <Backdrop aria-hidden="true" />
@@ -173,16 +176,15 @@ const HomePage = () => {
       />
       <audio ref={bgMusicRef} src={audioPaths.bgMusic} loop preload="auto" />
 
-      {stage !== 'playing' && (
+      {stage === 'idle' && (
         <GiveButton
           type="button"
-          aria-disabled={presented}
           onClick={startSong}
           initial={reduceMotion ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0.01 : 0.4, ease: 'easeOut' }}
-          whileHover={presented || reduceMotion ? undefined : { y: -4, scale: 1.025 }}
-          whileTap={presented || reduceMotion ? undefined : { scale: 0.97 }}
+          whileHover={reduceMotion ? undefined : { y: -4, scale: 1.025 }}
+          whileTap={reduceMotion ? undefined : { scale: 0.97 }}
         >
           <ButtonRose aria-hidden="true">✦</ButtonRose>
           Uhm
@@ -340,7 +342,7 @@ const BouquetStage = styled(motion.div)`
   position: absolute;
   z-index: 4;
   right: 42%;
-  bottom: -2vh;
+  bottom: 5vh;
   width: clamp(260px, 29vw, 440px);
   transform-origin: 50% 100%;
   filter: drop-shadow(0 22px 24px rgba(36, 72, 42, 0.28));
@@ -350,7 +352,7 @@ const BouquetStage = styled(motion.div)`
 
     right: -2vw;
     left: auto;
-    bottom: 1vh;
+    bottom: 6.5vh;
     width: min(68vw, 320px);
   }
 
@@ -393,11 +395,6 @@ const GiveButton = styled(motion.button)`
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-
-  &[aria-disabled='true'] {
-    cursor: default;
-    opacity: 0.8;
-  }
 
   &:focus-visible {
     outline: 4px solid #b9233d;
