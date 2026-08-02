@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { proposalCopy } from '../../data/proposalContent'
 import { FishGlyph, PawGlyph } from './CatGlyphs'
-import Megatron from './Megatron'
+import GardenCat from './GardenCat'
 
 interface CelebrationProps {
   onReplay: () => void
@@ -75,7 +75,7 @@ const Celebration = ({ onReplay }: CelebrationProps) => {
           animate={{ y: [0, -10, 0], rotate: [-2, 2, -2] }}
           transition={{ duration: 3.6, ease: 'easeInOut', repeat: Infinity }}
         >
-          <Megatron mood="happy" glow size={148} />
+          <GardenCat mood="happy" glow size={148} />
         </motion.div>
         <Kicker>{proposalCopy.celebrationKicker}</Kicker>
         <Title>{proposalCopy.celebrationTitle}</Title>
@@ -129,6 +129,12 @@ const Card = styled(motion.section)`
   box-shadow: var(--shadow-soft);
   text-align: center;
   backdrop-filter: blur(20px);
+
+  @media (max-width: 420px) {
+    padding: 30px 18px;
+    border-radius: 20px;
+    gap: 10px;
+  }
 `
 
 const Kicker = styled.p`
@@ -144,9 +150,13 @@ const Title = styled.h1`
   margin: 0;
   color: var(--ink-strong);
   font-family: var(--serif);
-  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  font-size: clamp(1.8rem, 6vw, 3.4rem);
   font-weight: 720;
   line-height: 1.04;
+
+  @media (max-width: 420px) {
+    font-size: clamp(1.5rem, 8vw, 2.4rem);
+  }
 `
 
 const Message = styled.p`
@@ -175,6 +185,16 @@ const ReplayButton = styled(motion.button)`
   font-weight: 900;
   font-size: 1rem;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+
+  @media (max-width: 420px) {
+    min-height: 48px;
+    padding: 12px 22px;
+    font-size: 0.92rem;
+  }
 `
 
 const QuizLink = styled(Link)`
@@ -189,6 +209,16 @@ const QuizLink = styled(Link)`
   font-weight: 800;
   font-size: 1rem;
   text-decoration: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+
+  @media (max-width: 420px) {
+    min-height: 48px;
+    padding: 12px 22px;
+    font-size: 0.92rem;
+  }
 `
 
 export default Celebration

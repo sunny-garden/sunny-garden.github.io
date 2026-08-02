@@ -64,7 +64,7 @@ const WelcomeStage = styled.main`
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 100svh;
+  min-height: 100dvh;
   padding: max(24px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
   overflow: hidden;
 `
@@ -198,10 +198,21 @@ const StartButton = styled(motion.button)`
   font-size: 1.08rem;
   letter-spacing: 0;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 
   &:focus-visible {
     outline: 3px solid rgba(11, 104, 189, 0.42);
     outline-offset: 5px;
+  }
+
+  @media (max-width: 420px) {
+    min-width: 160px;
+    min-height: 52px;
+    padding: 14px 24px;
+    font-size: 1rem;
   }
 `
 

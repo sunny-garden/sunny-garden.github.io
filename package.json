@@ -1,14 +1,15 @@
 {
-  "name": "project-megatron.github.io",
+  "name": "sunny-garden.github.io",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://project-megatron.github.io",
+  "homepage": "https://sunny-garden.github.io",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "postbuild": "node -e \"require('fs').copyFileSync('dist/index.html','dist/404.html');require('fs').writeFileSync('dist/.nojekyll','')\"",
     "lint": "eslint .",
+    "test": "vitest run",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages --dotfiles --nojekyll -d dist"
@@ -37,6 +38,7 @@
     "globals": "^17.6.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vitest": "^4.1.10"
   }
 }

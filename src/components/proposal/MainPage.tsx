@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { noButtonLabels, proposalCopy } from '../../data/proposalContent'
 import Celebration from './Celebration'
 import FloatingFish from './FloatingFish'
-import Megatron from './Megatron'
+import GardenCat from './GardenCat'
 import NoButton from './NoButton'
 import { useSfx } from './sfxContext'
 import YesButton from './YesButton'
@@ -59,7 +59,7 @@ const MainPage = () => {
                   animate={{ y: [0, -8, 0] }}
                   transition={{ duration: 3.8, ease: 'easeInOut', repeat: Infinity }}
                 >
-                  <Megatron mood="plead" glow size={132} />
+                  <GardenCat mood="plead" glow size={132} />
                 </motion.div>
                 <Kicker>{proposalCopy.kicker}</Kicker>
                 <Title>{proposalCopy.title}</Title>
@@ -112,6 +112,12 @@ const Card = styled(motion.section)`
   backdrop-filter: blur(20px);
   transform-style: preserve-3d;
 
+  @media (max-width: 420px) {
+    padding: 32px 20px;
+    border-radius: 20px;
+    gap: 8px;
+  }
+
   > div {
     display: grid;
     justify-items: center;
@@ -133,9 +139,13 @@ const Title = styled.h1`
   margin: 0;
   color: var(--ink-strong);
   font-family: var(--serif);
-  font-size: clamp(2.4rem, 7vw, 3.8rem);
+  font-size: clamp(1.8rem, 7vw, 3.8rem);
   font-weight: 720;
   line-height: 1.02;
+
+  @media (max-width: 420px) {
+    font-size: clamp(1.5rem, 8vw, 2.4rem);
+  }
 `
 
 const Subtitle = styled.p`
@@ -144,6 +154,10 @@ const Subtitle = styled.p`
   color: var(--ink-soft);
   font-size: 1.08rem;
   line-height: 1.6;
+
+  @media (max-width: 420px) {
+    font-size: 0.96rem;
+  }
 `
 
 const Actions = styled.div`

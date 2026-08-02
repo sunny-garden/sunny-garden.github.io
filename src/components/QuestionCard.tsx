@@ -150,7 +150,7 @@ const QuizStage = styled.main`
   display: grid;
   grid-template-rows: auto 1fr;
   align-items: center;
-  min-height: 100svh;
+  min-height: 100dvh;
   width: min(100%, 840px);
   margin: 0 auto;
   padding: max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
@@ -330,6 +330,10 @@ const GhostButton = styled(motion.button)`
   font-weight: 850;
   letter-spacing: 0;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 
   &:disabled {
     cursor: not-allowed;
@@ -339,6 +343,11 @@ const GhostButton = styled(motion.button)`
   &:focus-visible {
     outline: 3px solid rgba(11, 104, 189, 0.42);
     outline-offset: 4px;
+  }
+
+  @media (max-width: 420px) {
+    min-height: 48px;
+    padding: 12px 16px;
   }
 `
 
@@ -354,6 +363,10 @@ const NextButton = styled(motion.button)`
   font-weight: 900;
   letter-spacing: 0;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 
   &:disabled {
     cursor: not-allowed;
@@ -364,6 +377,11 @@ const NextButton = styled(motion.button)`
   &:focus-visible {
     outline: 3px solid rgba(11, 104, 189, 0.42);
     outline-offset: 4px;
+  }
+
+  @media (max-width: 420px) {
+    min-height: 48px;
+    padding: 12px 18px;
   }
 `
 

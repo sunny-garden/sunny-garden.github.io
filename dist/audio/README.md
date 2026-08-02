@@ -6,7 +6,7 @@ GitHub Pages from any base path.
 
 | File               | Used for                                  | Suggested format                |
 | ------------------ | ----------------------------------------- | ------------------------------- |
-| `megatron-vo.mp3`  | Intro voiceover (Megatron-inspired)       | MP3, ~128 kbps, ~20–25 seconds  |
+| `megatron-vo.mp3`  | Intro voiceover (Sunny Garden intro)       | MP3, ~128 kbps, ~20–25 seconds  |
 | `sfx-no.mp3`       | NO button runs away (funny / dramatic)    | MP3, short one-shot (<1s)       |
 | `sfx-yes.mp3`      | YES button pressed (happy)                | MP3, short one-shot (<1.5s)     |
 | `bg-music.mp3`     | Ambient loop (muted by default)           | MP3, seamless loop              |

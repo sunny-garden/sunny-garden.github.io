@@ -46,6 +46,16 @@ const Button = styled(motion.button)`
   font-size: 1.1rem;
   white-space: nowrap;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+
+  @media (max-width: 420px) {
+    min-height: 52px;
+    padding: 14px 24px;
+    font-size: 1rem;
+  }
 
   svg {
     color: rgba(255, 255, 255, 0.92);

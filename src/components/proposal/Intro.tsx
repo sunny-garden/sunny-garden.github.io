@@ -10,7 +10,7 @@ import styled from 'styled-components'
 import { audioPaths } from '../../data/proposalContent'
 import type { LyricLine } from '../../types/proposal'
 import LyricOverlay from './LyricOverlay'
-import Megatron from './Megatron'
+import GardenCat from './GardenCat'
 import { FishGlyph, PawGlyph } from './CatGlyphs'
 
 interface IntroProps {
@@ -39,7 +39,7 @@ const midField = [
 
 /**
  * Full-screen animated intro: a start gate (required so audio may play), then a
- * 3D parallax scene with the mecha-cat, a Megatron-inspired voiceover and
+ * 3D parallax scene with the mecha-cat, a voiceover and
  * lyric-style text synced to the supplied `lyrics`.
  */
 const Intro = ({ lyrics, voSrc = audioPaths.intro, onFinish }: IntroProps) => {
@@ -87,7 +87,7 @@ const Intro = ({ lyrics, voSrc = audioPaths.intro, onFinish }: IntroProps) => {
       onPointerMove={phase === 'playing' ? handlePointerMove : undefined}
     >
       {/*
-        Megatron-inspired AI voiceover.
+        Voiceover for the intro.
         Expected file: public/audio/megatron-vo.mp3
         Format: MP3 (~128 kbps, mono or stereo). Keep it around 20-25s so it
         lines up with the lyric `delay` timings in proposalContent.ts.
@@ -109,7 +109,7 @@ const Intro = ({ lyrics, voSrc = audioPaths.intro, onFinish }: IntroProps) => {
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4.5, ease: 'easeInOut', repeat: Infinity }}
             >
-              <Megatron mood="neutral" glow size={150} />
+              <GardenCat mood="neutral" glow size={150} />
             </motion.div>
             <GateKicker>Transmission Incoming</GateKicker>
             <GateTitle>A small steel cat has something to say.</GateTitle>
@@ -178,7 +178,7 @@ const Intro = ({ lyrics, voSrc = audioPaths.intro, onFinish }: IntroProps) => {
                   animate={{ y: [0, -16, 0], rotate: [-1.5, 1.5, -1.5] }}
                   transition={{ duration: 5.2, ease: 'easeInOut', repeat: Infinity }}
                 >
-                  <Megatron mood="plead" glow size={210} />
+                  <GardenCat mood="plead" glow size={210} />
                 </motion.div>
               </HeroDepth>
             </Stage>
@@ -212,7 +212,7 @@ const Gate = styled(motion.div)`
   place-content: center;
   justify-items: center;
   gap: 14px;
-  padding: 24px;
+  padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
   text-align: center;
 `
 
@@ -268,6 +268,10 @@ const BeginButton = styled(motion.button)`
   font-weight: 900;
   font-size: 1.05rem;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 `
 
 const PlayIcon = styled.span`
@@ -334,7 +338,7 @@ const SkipButton = styled(motion.button)`
   top: max(18px, env(safe-area-inset-top));
   right: max(18px, env(safe-area-inset-right));
   z-index: 6;
-  min-height: 44px;
+  min-height: 48px;
   padding: 10px 18px;
   border: 1px solid rgba(190, 224, 255, 0.4);
   border-radius: 999px;
@@ -344,6 +348,10 @@ const SkipButton = styled(motion.button)`
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 `
 
 export default Intro

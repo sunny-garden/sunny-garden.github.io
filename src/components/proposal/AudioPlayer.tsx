@@ -81,7 +81,7 @@ const Toggle = styled(motion.button)`
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  min-height: 44px;
+  min-height: 48px;
   padding: 10px 16px 10px 14px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 999px;
@@ -92,6 +92,17 @@ const Toggle = styled(motion.button)`
   font-weight: 800;
   font-size: 0.9rem;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+
+  @media (max-width: 420px) {
+    min-height: 44px;
+    padding: 8px 14px 8px 12px;
+    gap: 8px;
+    font-size: 0.82rem;
+  }
 `
 
 const Equalizer = styled.span<{ $on: boolean }>`

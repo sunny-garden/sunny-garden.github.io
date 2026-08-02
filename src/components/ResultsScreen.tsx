@@ -139,7 +139,7 @@ const ResultsScreen = ({ answers, onReset }: ResultsScreenProps) => {
 
 const ResultsStage = styled.main`
   position: relative;
-  min-height: 100svh;
+  min-height: 100dvh;
   overflow: hidden;
   padding: max(24px, env(safe-area-inset-top)) 16px max(36px, env(safe-area-inset-bottom));
 `
@@ -396,10 +396,19 @@ const ResetButton = styled(motion.button)`
   font-weight: 850;
   letter-spacing: 0;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 
   &:focus-visible {
     outline: 3px solid rgba(11, 104, 189, 0.42);
     outline-offset: 4px;
+  }
+
+  @media (max-width: 420px) {
+    min-height: 48px;
+    padding: 12px 18px;
   }
 `
 

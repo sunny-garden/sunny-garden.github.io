@@ -12,4 +12,4 @@ export interface SfxContextValue {
   playSfx: (name: SfxName) => void
 }
 
-export type MegatronMood = 'neutral' | 'plead' | 'happy'
+export type CatMood = 'neutral' | 'plead' | 'happy'

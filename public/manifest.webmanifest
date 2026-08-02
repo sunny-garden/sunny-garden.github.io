@@ -1,7 +1,7 @@
 {
-  "name": "Paw Print Check-In",
-  "short_name": "Paw Check-In",
-  "description": "A polished blue-and-white cat-themed quiz with simple yes, no, and custom answers.",
+  "name": "Sunny Garden",
+  "short_name": "Sunny Garden",
+  "description": "Sunny Garden — a cozy cat-themed interactive site.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

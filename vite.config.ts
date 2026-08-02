@@ -5,7 +5,7 @@ import babel from '@rolldown/plugin-babel'
 // https://vite.dev/config/
 export default defineConfig({
   // GitHub Pages base path.
-  // This repository is a user/organization site (project-megatron.github.io),
+  // This repository is a user/organization site (sunny-garden.github.io),
   // so it is served from the domain root and `base` must be '/'.
   //
   // If you fork this into a PROJECT repository served at

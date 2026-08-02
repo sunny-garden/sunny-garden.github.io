@@ -112,6 +112,16 @@ const Evader = styled(motion.button)<{ $roaming: boolean }>`
   white-space: nowrap;
   cursor: pointer;
   will-change: transform;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+
+  @media (max-width: 420px) {
+    min-height: 48px;
+    padding: 12px 22px;
+    font-size: 0.92rem;
+  }
 `
 
 export default NoButton

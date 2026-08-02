@@ -10,7 +10,7 @@ const base = import.meta.env.BASE_URL
  * Drop the matching files into `public/audio/` and they will be picked up.
  */
 export const audioPaths = {
-  /** Megatron-inspired AI voiceover for the intro. */
+  /** Voiceover for the intro. */
   intro: `${base}audio/megatron-vo.mp3`,
   /** Funny / dramatic sound when the NO button runs away. */
   sfxNo: `${base}audio/sfx-no.mp3`,

@@ -36,7 +36,7 @@ const ProposalPage = () => {
 
 const Page = styled.main`
   position: relative;
-  min-height: 100svh;
+  min-height: 100dvh;
   overflow: hidden;
 `
 

@@ -1,322 +1,330 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import styled, { keyframes } from 'styled-components'
-import FloatingFaces from '../components/FloatingFaces'
-import PasswordGate from '../components/PasswordGate'
-import { notifyVisit } from '../services/notification'
-import { playUiSound } from '../services/soundEffects'
+import RoseBouquet from '../components/home/RoseBouquet'
 
-const zoomBreathe = keyframes`
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.06); }
-`
-
-const floatIn = keyframes`
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-`
-
-const heartGlow = keyframes`
-  0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.55)); }
-  50%      { transform: scale(1.12); filter: drop-shadow(0 0 24px rgba(59, 130, 246, 0.95)); }
-`
-
-const TAGLINE_TEXT =
-  'Hang in there Sunny! It will take some time but I Promise I\'m gonna try my best to reach out to you when I\'m available :)'
-
-const TAGLINE_WORDS = TAGLINE_TEXT.split(' ')
-
-/** Per-word stagger; words reveal sequentially with a gentle blur-in. */
-const wordVariants = {
-  hidden: { opacity: 0, y: 10, filter: 'blur(6px)' },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    filter: 'blur(0px)',
-    transition: { delay: 0.35 + i * 0.11, duration: 0.55, ease: 'easeOut' as const },
-  }),
-}
-
-/** Subtle hover wiggle applied to every word after it has revealed. */
-const wordWiggle = {
-  hover: {
-    y: [0, -3, 0],
-    color: ['#cfe4ff', '#9fd0ff', '#cfe4ff'],
-    transition: { duration: 0.6, ease: 'easeInOut' as const },
-  },
-}
-
-interface LyricRevealProps {
-  text: string
-}
-
-/**
- * Word-by-word "lyrical" reveal. Each word is an inline span wrapped with a
- * regular space so the browser lays the text out naturally (no flex-collapse).
- * Words stagger in with a blur-in, then gain a gentle hover wiggle.
- */
-const LyricReveal = ({ text }: LyricRevealProps) => {
-  const words = text.split(' ')
-  return (
-    <Tagline>
-      {words.map((word, i) => (
-        <WordSpan key={`w-${i}`} custom={i} variants={wordVariants} initial="hidden" animate="visible">
-          <motion.span whileHover="hover" variants={wordWiggle} style={{ display: 'inline-block' }}>
-            {word}
-          </motion.span>
-          {i < words.length - 1 ? '\u00A0' : ''}
-        </WordSpan>
-      ))}
-    </Tagline>
-  )
-}
-
-/**
- * Meme-style home page with the dancing cat GIF and background music.
- *
- * Flow:
- *  1. A "Heyy!" button is shown first (so the music can start on a user
- *     gesture, satisfying browser autoplay rules).
- *  2. After pressing it, the music begins and the floating faces, dancing cat
- *     GIF, the lyrical tagline and a closing "I Love You!" line are revealed.
- */
 const HomePage = () => {
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [unlocked, setUnlocked] = useState(false)
-  const [started, setStarted] = useState(false)
-
-  /* Create the audio element for background music */
-  useEffect(() => {
-    const audio = new Audio(`${import.meta.env.BASE_URL}audio/cat_meme_sound.mp3`)
-    audio.loop = false
-    audio.volume = 0.4
-    audioRef.current = audio
-    return () => {
-      audio.pause()
-      audioRef.current = null
-    }
-  }, [])
-
-  /* "Heyy!" handler: starts the music, notifies you, and reveals the rest. */
-  const handleStart = useCallback(() => {
-    if (started) return
-    audioRef.current?.play().catch(() => undefined)
-    setStarted(true)
-    notifyVisit()
-  }, [started])
-
-  const loveDelay = 0.35 + TAGLINE_WORDS.length * 0.11 + 0.25
+  const [presented, setPresented] = useState(false)
+  const reduceMotion = useReducedMotion()
+  const baseUrl = import.meta.env.BASE_URL
+  const presentFlowers = () => {
+    if (!presented) setPresented(true)
+  }
 
   return (
     <Page>
-      <BgGradient />
-      {started && (
-        <FloatingFaces
-          src={`${import.meta.env.BASE_URL}optimus_smiling.png`}
-          count={16}
-          onPoke={playPokeSfx}
+      <BackgroundImage
+        src={`${baseUrl}background.webp`}
+        alt=""
+        width="1672"
+        height="941"
+        fetchPriority="high"
+      />
+      <Atmosphere aria-hidden="true" />
+      <TextSpace aria-label="Space reserved for a personal message" />
+
+      <CharacterFrame
+        initial={false}
+        animate={{
+          x: presented && !reduceMotion ? [0, -8, 0] : 0,
+          rotate: presented && !reduceMotion ? [0, -0.7, 0] : 0,
+        }}
+        transition={{ delay: 2.25, duration: 1.1, ease: 'easeInOut' }}
+      >
+        <CharacterImage
+          src={`${baseUrl}female_character.webp`}
+          alt="A woman receiving a bouquet in a sunny garden"
+          width="864"
+          height="1820"
         />
-      )}
+      </CharacterFrame>
 
-      <Content>
-        {!unlocked ? (
-          <PasswordGate onUnlock={() => setUnlocked(true)} />
-        ) : !started ? (
-          <StartGate>
-            <HeyyButton
-              type="button"
-              onClick={handleStart}
-              whileHover={{ y: -3, scale: 1.03 }}
-              whileTap={{ scale: 0.96 }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              Heyy!
-            </HeyyButton>
-            <Credit>Created by Excellent_Torch</Credit>
-          </StartGate>
-        ) : (
-          <Reveal>
-            <GifWrap>
-              <CatGif
-                src={`${import.meta.env.BASE_URL}oia-dancing-cat.gif`}
-                alt="A dancing cat grooving to the music"
-              />
-            </GifWrap>
+      <BouquetStage
+        initial={false}
+        animate={{
+          x: presented ? 'var(--bouquet-handoff-x)' : 0,
+          y: presented ? 'clamp(-34px, -4vh, -14px)' : 'clamp(0px, 0vh, 0px)',
+          rotate: presented ? 6 : -7,
+        }}
+        transition={{
+          delay: reduceMotion ? 0 : 1.95,
+          duration: reduceMotion ? 0.01 : 1.25,
+          type: reduceMotion ? 'tween' : 'spring',
+          stiffness: 74,
+          damping: 15,
+        }}
+      >
+        <RoseBouquet presented={presented} />
+      </BouquetStage>
 
-            <LyricReveal text={TAGLINE_TEXT} />
-
-            <LoveLine
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: loveDelay, duration: 0.6, ease: 'easeOut' }}
-            >
-              I Love You!
-              <Heart aria-hidden="true">💙</Heart>
-            </LoveLine>
-          </Reveal>
-        )}
-      </Content>
+      <GiveButton
+        type="button"
+        aria-disabled={presented}
+        onClick={presentFlowers}
+        initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0.01 : 0.4, ease: 'easeOut' }}
+        whileHover={presented || reduceMotion ? undefined : { y: -4, scale: 1.025 }}
+        whileTap={presented || reduceMotion ? undefined : { scale: 0.97 }}
+      >
+        <ButtonRose aria-hidden="true">✦</ButtonRose>
+        Uhm
+      </GiveButton>
+      <CompletionStatus id="flower-status" role="status" aria-live="polite" aria-atomic="true">
+        {presented ? 'Bouquet presented.' : ''}
+      </CompletionStatus>
     </Page>
   )
 }
 
-/** SFX played when a floating face is poked. Throttled so it stays musical. */
-let lastPokeAt = 0
-const playPokeSfx = () => {
-  const now = performance.now()
-  if (now - lastPokeAt < 90) return
-  lastPokeAt = now
-  playUiSound('select')
-}
+const drift = keyframes`
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -10px, 0); }
+`
 
 const Page = styled.main`
   position: relative;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
   min-height: 100svh;
   overflow: hidden;
-  padding: calc(env(safe-area-inset-top) + 6vh) env(safe-area-inset-right)
-    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  isolation: isolate;
+  background: #d8d293;
 `
 
-const BgGradient = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 50%, #1c1c1e 100%);
-`
-
-const Content = styled.div`
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 28px;
-  padding: 24px 20px;
-  width: 100%;
-  max-width: 480px;
-
-  @media (max-width: 480px) {
-    gap: 22px;
-    padding: 20px 16px;
-  }
-`
-
-const StartGate = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 3;
-  display: grid;
-  place-items: center;
-`
-
-const Credit = styled.p`
+const BackgroundImage = styled.img`
   position: absolute;
-  bottom: max(20px, env(safe-area-inset-bottom));
-  left: 0;
-  right: 0;
-  margin: 0;
-  padding: 0 20px;
-  font-size: 0.78rem;
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.3);
-`
-
-const GifWrap = styled.div`
-  width: 100%;
-  max-width: 380px;
-
-  @media (max-width: 480px) {
-    max-width: min(82vw, 320px);
-  }
-`
-
-const CatGif = styled.img`
+  z-index: 0;
+  inset: 0;
   display: block;
   width: 100%;
-  height: auto;
-  object-fit: contain;
-  animation: ${zoomBreathe} 3.6s ease-in-out infinite;
-`
+  height: 100%;
+  pointer-events: none;
+  object-fit: cover;
+  object-position: 54% center;
 
-const HeyyButton = styled(motion.button)`
-  min-height: 64px;
-  padding: 18px 48px;
-  border: 1px solid rgba(214, 233, 250, 0.6);
-  border-radius: 999px;
-  color: #1f7ae0;
-  background: #ffffff;
-  box-shadow: 0 18px 46px rgba(31, 122, 224, 0.35);
-  font-weight: 900;
-  font-size: 1.6rem;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-`
+  @media (max-width: 720px) {
+    object-position: 54% center;
+  }
 
-const Reveal = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 28px;
-  width: 100%;
-  animation: ${floatIn} 0.5s ease-out both;
-
-  @media (max-width: 480px) {
-    gap: 22px;
+  @media (max-width: 420px) {
+    object-position: 54% center;
   }
 `
 
-const Tagline = styled.p`
+const Atmosphere = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255, 244, 180, 0.4), transparent 28%),
+    linear-gradient(to top, rgba(20, 83, 47, 0.16), transparent 42%);
+
+  &::after {
+    position: absolute;
+    top: 12%;
+    right: 18%;
+    width: clamp(110px, 16vw, 240px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: rgba(255, 248, 195, 0.12);
+    filter: blur(32px);
+    animation: ${drift} 5.5s ease-in-out infinite;
+    content: '';
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      animation: none;
+    }
+  }
+`
+
+const TextSpace = styled.section`
+  position: absolute;
+  z-index: 3;
+  top: max(8vh, calc(env(safe-area-inset-top) + 32px));
+  right: max(5vw, calc(env(safe-area-inset-right) + 24px));
+  width: min(38vw, 520px);
+  min-height: clamp(128px, 24vh, 250px);
+  text-align: right;
+
+  @media (max-width: 720px) {
+    right: calc(env(safe-area-inset-right) + 20px);
+    left: calc(env(safe-area-inset-left) + 20px);
+    width: auto;
+    min-height: 118px;
+    text-align: center;
+  }
+`
+
+const CharacterFrame = styled(motion.figure)`
+  position: absolute;
+  z-index: 2;
+  left: clamp(-50px, 1vw, 22px);
+  bottom: -3vh;
+  width: clamp(310px, 36vw, 570px);
+  height: min(88vh, 880px);
   margin: 0;
-  font-family: 'Archivo Black', sans-serif;
-  font-weight: 400;
-  font-size: clamp(1.1rem, 4.5vw, 1.4rem);
-  letter-spacing: 0.04em;
-  line-height: 1.65;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.82);
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  border: 1px solid rgba(255, 248, 218, 0.38);
+  border-radius: 48% 48% 14% 14% / 18% 18% 8% 8%;
+  box-shadow:
+    0 28px 80px rgba(39, 78, 43, 0.3),
+    inset 0 0 70px rgba(255, 244, 190, 0.2);
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0, #000 10%, #000 87%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent 0, #000 10%, #000 87%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%);
+  mask-composite: intersect;
+  transform-origin: bottom center;
 
-  @media (max-width: 480px) {
-    font-size: clamp(1.15rem, 5.5vw, 1.6rem);
-    line-height: 1.7;
-    letter-spacing: 0.02em;
+  @media (max-width: 720px) {
+    left: -60px;
+    bottom: 0;
+    width: min(58vw, 320px);
+    height: min(65vh, 600px);
+  }
+
+  @media (max-width: 420px) {
+    left: -44px;
+    width: min(55vw, 260px);
+    height: min(60vh, 500px);
+  }
+
+  @media (max-height: 620px) {
+    width: clamp(264px, 30.6vw, 485px);
+  }
+
+  @media (max-width: 720px) and (max-height: 620px) {
+    width: min(50vw, 280px);
   }
 `
 
-const WordSpan = styled(motion.span)`
-  display: inline;
-  will-change: opacity, transform, filter;
+const CharacterImage = styled.img`
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 19%;
+  filter: saturate(0.94) contrast(1.02) brightness(1.03);
 `
 
-const lovePulse = keyframes`
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.04); }
+const BouquetStage = styled(motion.div)`
+  --bouquet-handoff-x: clamp(-70px, -4vw, -24px);
+
+  position: absolute;
+  z-index: 4;
+  right: 42%;
+  bottom: -2vh;
+  width: clamp(260px, 29vw, 440px);
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 22px 24px rgba(36, 72, 42, 0.28));
+
+  @media (max-width: 720px) {
+    --bouquet-handoff-x: clamp(-38px, -5vw, -18px);
+
+    right: -2vw;
+    left: auto;
+    bottom: 1vh;
+    width: min(68vw, 320px);
+  }
+
+  @media (max-width: 420px) {
+    right: -3vw;
+    width: min(70vw, 286px);
+  }
+
+  @media (max-height: 620px) {
+    width: clamp(221px, 24.65vw, 374px);
+  }
+
+  @media (max-width: 720px) and (max-height: 620px) {
+    width: min(60vw, 270px);
+  }
 `
 
-const LoveLine = styled(motion.p)`
-  margin: 4px 0 0;
+const GiveButton = styled(motion.button)`
+  position: absolute;
+  z-index: 5;
+  right: clamp(24px, 13vw, 190px);
+  bottom: max(7vh, calc(env(safe-area-inset-bottom) + 24px));
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  font-family: 'Archivo Black', sans-serif;
-  font-weight: 400;
-  font-size: clamp(2rem, 9vw, 3.2rem);
-  color: #cfe4ff;
-  text-shadow: 0 2px 16px rgba(59, 130, 246, 0.6);
-  animation: ${lovePulse} 2.4s ease-in-out infinite;
+  min-height: 58px;
+  padding: 12px 28px;
+  border: 1px solid rgba(255, 249, 224, 0.94);
+  border-radius: 999px;
+  color: #173f2c;
+  background: #fff7dc;
+  box-shadow: 0 16px 38px rgba(96, 55, 22, 0.28);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.015em;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+
+  &[aria-disabled='true'] {
+    cursor: default;
+    opacity: 0.8;
+  }
+
+  &:focus-visible {
+    outline: 4px solid #b9233d;
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 720px) {
+    right: auto;
+    left: 50%;
+    bottom: max(4vh, calc(env(safe-area-inset-bottom) + 18px));
+    max-width: calc(100% - 32px);
+    translate: -50% 0;
+    min-height: 56px;
+    padding: 14px 32px;
+    font-size: 1.05rem;
+  }
+
+  @media (max-width: 420px) {
+    padding: 14px 28px;
+    min-height: 52px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 `
 
-const Heart = styled.span`
-  display: inline-block;
-  font-size: 1.2em;
-  animation: ${heartGlow} 1.6s ease-in-out infinite;
+const ButtonRose = styled.span`
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff7dc;
+  background: #bd2440;
+  font-size: 1rem;
+  line-height: 1;
+`
+
+const CompletionStatus = styled.p`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 `
 
 export default HomePage

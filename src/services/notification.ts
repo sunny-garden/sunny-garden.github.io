@@ -45,8 +45,8 @@ interface DiscordEmbed {
 }
 
 const toDiscordPayload = (data: NotificationPayload) => ({
-  username: 'Megatron Watchdog',
-  avatar_url: `${import.meta.env.BASE_URL}megatron-image.png`,
+  username: 'Sunny Garden',
+  avatar_url: `${import.meta.env.BASE_URL}favicon.svg`,
   embeds: [
     {
       title: data.title,
@@ -101,7 +101,7 @@ export const notifyVisit = async (): Promise<void> => {
 
   const payload: NotificationPayload = {
     title: '👋 Someone clicked Heyy!',
-    body: 'A visitor just entered Megatron\'s Domain and pressed the Heyy! button.',
+    body: 'A visitor just entered Sunny Garden and pressed the Heyy! button.',
     timestamp: new Date().toISOString(),
     page: window.location.href,
     metadata: {

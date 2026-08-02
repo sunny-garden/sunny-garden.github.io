@@ -226,11 +226,21 @@ const OptionButton = styled(motion.button)`
   line-height: 1.18;
   text-align: center;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
   transition:
     border-color 180ms ease,
     background 180ms ease,
     box-shadow 180ms ease,
     color 180ms ease;
+
+  @media (max-width: 420px) {
+    min-height: 72px;
+    padding: 14px 10px;
+    font-size: 0.94rem;
+  }
 
   &[data-selected='true'] {
     border-color: rgba(11, 104, 189, 0.86);
