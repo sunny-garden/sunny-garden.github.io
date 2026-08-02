@@ -1,4 +1,6 @@
 import type { LyricLine } from '../types/proposal'
+import bgMusicFile from '../../audio/bg-music.mp3'
+import nightChangesSong from '../../audio/night-changes-song.mp3'
 
 const base = import.meta.env.BASE_URL
 
@@ -8,6 +10,8 @@ const base = import.meta.env.BASE_URL
  * site is served from the domain root or from a `/repo-name/` sub-path.
  *
  * Drop the matching files into `public/audio/` and they will be picked up.
+ * `nightChanges` is imported through Vite instead, so replacing the file in
+ * `audio/` changes its hashed URL and never serves a stale cached version.
  */
 export const audioPaths = {
   /** Voiceover for the intro. */
@@ -17,9 +21,9 @@ export const audioPaths = {
   /** Happy sound when YES is pressed. */
   sfxYes: `${base}audio/sfx-yes.mp3`,
   /** Looping ambient background music (muted by default). */
-  bgMusic: `${base}audio/bg-music.mp3`,
+  bgMusic: bgMusicFile,
   /** Pre-cut chorus of "Night Changes" for the home bouquet reveal. */
-  nightChanges: `${base}audio/night-changes-song.mp3`,
+  nightChanges: nightChangesSong,
 } as const
 
 /**

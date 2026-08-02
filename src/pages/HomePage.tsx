@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import styled, { keyframes } from 'styled-components'
 import RoseBouquet from '../components/home/RoseBouquet'
@@ -8,14 +8,48 @@ import { songLyrics } from '../data/songLyrics'
 
 type Stage = 'idle' | 'playing' | 'presented'
 
+/** Seconds before the song ends when the crossfade to background music starts. */
+const SONG_FADE_SECONDS = 2.5
+/** Volume the looping background music ramps up to. */
+const BG_MUSIC_VOLUME = 0.55
+
+/** Ramp an audio element's volume linearly from its current level to `target`. */
+const rampVolume = (audio: HTMLAudioElement, target: number, seconds: number) => {
+  const start = audio.volume
+  const steps = Math.max(1, Math.round(seconds * 20))
+  const delta = (target - start) / steps
+  let step = 0
+  const timer = window.setInterval(() => {
+    step += 1
+    audio.volume = start + delta * step
+    if (step >= steps) {
+      window.clearInterval(timer)
+    }
+  }, 50)
+}
+
 const HomePage = () => {
   const [stage, setStage] = useState<Stage>('idle')
   const [playFailed, setPlayFailed] = useState(false)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const songRef = useRef<HTMLAudioElement | null>(null)
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null)
+  const crossfadeStartedRef = useRef(false)
   const reduceMotion = useReducedMotion()
   const baseUrl = import.meta.env.BASE_URL
 
-  const readAudioTime = useCallback(() => audioRef.current?.currentTime ?? 0, [])
+  const readAudioTime = useCallback(() => songRef.current?.currentTime ?? 0, [])
+
+  useEffect(() => {
+    const song = songRef.current
+    const bg = bgMusicRef.current
+    if (bg) {
+      bg.volume = 0
+    }
+    return () => {
+      song?.pause()
+      bg?.pause()
+    }
+  }, [])
 
   const startSong = useCallback(() => {
     setStage((current) => {
@@ -23,7 +57,8 @@ const HomePage = () => {
         return current
       }
       setPlayFailed(false)
-      const audio = audioRef.current
+      crossfadeStartedRef.current = false
+      const audio = songRef.current
       if (audio) {
         audio.currentTime = 0
         const playback = audio.play()
@@ -44,6 +79,34 @@ const HomePage = () => {
     setPlayFailed(true)
     setStage('idle')
   }, [])
+
+  const handleSongTimeUpdate = useCallback(() => {
+    if (crossfadeStartedRef.current) {
+      return
+    }
+    const song = songRef.current
+    const bg = bgMusicRef.current
+    if (!song || !bg) {
+      return
+    }
+    const duration = song.duration
+    if (!Number.isFinite(duration) || duration - song.currentTime > SONG_FADE_SECONDS) {
+      return
+    }
+    crossfadeStartedRef.current = true
+
+    const playback = bg.play()
+    if (playback) {
+      playback.catch(() => undefined)
+    }
+    if (reduceMotion) {
+      bg.volume = BG_MUSIC_VOLUME
+      return
+    }
+    bg.volume = 0
+    rampVolume(song, 0, SONG_FADE_SECONDS)
+    rampVolume(bg, BG_MUSIC_VOLUME, SONG_FADE_SECONDS)
+  }, [reduceMotion])
 
   const presented = stage === 'presented'
 
@@ -101,12 +164,14 @@ const HomePage = () => {
       )}
 
       <audio
-        ref={audioRef}
+        ref={songRef}
         src={audioPaths.nightChanges}
         preload="auto"
         onEnded={handleEnded}
         onError={handleError}
+        onTimeUpdate={handleSongTimeUpdate}
       />
+      <audio ref={bgMusicRef} src={audioPaths.bgMusic} loop preload="auto" />
 
       {stage !== 'playing' && (
         <GiveButton

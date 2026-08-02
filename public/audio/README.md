@@ -9,8 +9,12 @@ GitHub Pages from any base path.
 | `megatron-vo.mp3`  | Intro voiceover (Sunny Garden intro)       | MP3, ~128 kbps, ~20–25 seconds  |
 | `sfx-no.mp3`       | NO button runs away (funny / dramatic)    | MP3, short one-shot (<1s)       |
 | `sfx-yes.mp3`      | YES button pressed (happy)                | MP3, short one-shot (<1.5s)     |
-| `bg-music.mp3`     | Ambient loop (muted by default)           | MP3, seamless loop              |
-| `night-changes-song.mp3` | "Night Changes" chorus for the home bouquet reveal | MP3, ~40 s chorus clip |
+
+`bg-music.mp3` and `night-changes-song.mp3` are not dropped in this folder.
+They live in the repo root `audio/` folder and are imported by
+`src/data/proposalContent.ts`, so Vite bundles them with content-hashed
+filenames. Replacing either file with a new version automatically changes
+its URL and skips stale browser/CDN caches.
 
 All of these are optional. If a file is missing the app never crashes:
 
