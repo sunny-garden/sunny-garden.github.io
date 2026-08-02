@@ -1,15 +1,51 @@
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import styled, { keyframes } from 'styled-components'
 import RoseBouquet from '../components/home/RoseBouquet'
+import LyricOverlay from '../components/proposal/LyricOverlay'
+import { audioPaths } from '../data/proposalContent'
+import { songLyrics } from '../data/songLyrics'
+
+type Stage = 'idle' | 'playing' | 'presented'
 
 const HomePage = () => {
-  const [presented, setPresented] = useState(false)
+  const [stage, setStage] = useState<Stage>('idle')
+  const [playFailed, setPlayFailed] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const reduceMotion = useReducedMotion()
   const baseUrl = import.meta.env.BASE_URL
-  const presentFlowers = () => {
-    if (!presented) setPresented(true)
-  }
+
+  const readAudioTime = useCallback(() => audioRef.current?.currentTime ?? 0, [])
+
+  const startSong = useCallback(() => {
+    setStage((current) => {
+      if (current !== 'idle') {
+        return current
+      }
+      setPlayFailed(false)
+      const audio = audioRef.current
+      if (audio) {
+        audio.currentTime = 0
+        const playback = audio.play()
+        if (playback) {
+          playback.catch(() => {
+            setPlayFailed(true)
+            setStage('idle')
+          })
+        }
+      }
+      return 'playing'
+    })
+  }, [])
+
+  const handleEnded = useCallback(() => setStage('presented'), [])
+
+  const handleError = useCallback(() => {
+    setPlayFailed(true)
+    setStage('idle')
+  }, [])
+
+  const presented = stage === 'presented'
 
   return (
     <Page>
@@ -57,21 +93,42 @@ const HomePage = () => {
         <RoseBouquet presented={presented} />
       </BouquetStage>
 
-      <GiveButton
-        type="button"
-        aria-disabled={presented}
-        onClick={presentFlowers}
-        initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: reduceMotion ? 0.01 : 0.4, ease: 'easeOut' }}
-        whileHover={presented || reduceMotion ? undefined : { y: -4, scale: 1.025 }}
-        whileTap={presented || reduceMotion ? undefined : { scale: 0.97 }}
-      >
-        <ButtonRose aria-hidden="true">✦</ButtonRose>
-        Uhm
-      </GiveButton>
+      {stage === 'playing' && (
+        <SongOverlay>
+          <Backdrop aria-hidden="true" />
+          <LyricOverlay lines={songLyrics} currentTime={readAudioTime} />
+        </SongOverlay>
+      )}
+
+      <audio
+        ref={audioRef}
+        src={audioPaths.nightChanges}
+        preload="auto"
+        onEnded={handleEnded}
+        onError={handleError}
+      />
+
+      {stage !== 'playing' && (
+        <GiveButton
+          type="button"
+          aria-disabled={presented}
+          onClick={startSong}
+          initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0.01 : 0.4, ease: 'easeOut' }}
+          whileHover={presented || reduceMotion ? undefined : { y: -4, scale: 1.025 }}
+          whileTap={presented || reduceMotion ? undefined : { scale: 0.97 }}
+        >
+          <ButtonRose aria-hidden="true">✦</ButtonRose>
+          Uhm
+        </GiveButton>
+      )}
       <CompletionStatus id="flower-status" role="status" aria-live="polite" aria-atomic="true">
-        {presented ? 'Bouquet presented.' : ''}
+        {presented
+          ? 'Bouquet presented.'
+          : playFailed
+            ? 'Could not play the song. Please try again.'
+            : ''}
       </CompletionStatus>
     </Page>
   )
@@ -314,6 +371,19 @@ const ButtonRose = styled.span`
   background: #bd2440;
   font-size: 1rem;
   line-height: 1;
+`
+
+const SongOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+`
+
+const Backdrop = styled.div`
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 60%, rgba(6, 18, 31, 0.28), rgba(6, 18, 31, 0.66));
 `
 
 const CompletionStatus = styled.p`

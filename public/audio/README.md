@@ -10,6 +10,7 @@ GitHub Pages from any base path.
 | `sfx-no.mp3`       | NO button runs away (funny / dramatic)    | MP3, short one-shot (<1s)       |
 | `sfx-yes.mp3`      | YES button pressed (happy)                | MP3, short one-shot (<1.5s)     |
 | `bg-music.mp3`     | Ambient loop (muted by default)           | MP3, seamless loop              |
+| `night-changes-song.mp3` | "Night Changes" chorus for the home bouquet reveal | MP3, ~40 s chorus clip |
 
 All of these are optional. If a file is missing the app never crashes:
 

@@ -18,6 +18,8 @@ export const audioPaths = {
   sfxYes: `${base}audio/sfx-yes.mp3`,
   /** Looping ambient background music (muted by default). */
   bgMusic: `${base}audio/bg-music.mp3`,
+  /** Pre-cut chorus of "Night Changes" for the home bouquet reveal. */
+  nightChanges: `${base}audio/night-changes-song.mp3`,
 } as const
 
 /**

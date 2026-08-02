@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import styled from 'styled-components'
+import { getActiveLyricIndex } from '../../data/songLyrics'
 import type { LyricLine } from '../../types/proposal'
 
 interface LyricOverlayProps {
   lines: LyricLine[]
+  /**
+   * Optional live audio clock in seconds. When provided, lines advance by
+   * polling this clock instead of wall-clock timers, so they stay aligned
+   * with playback. The function should be stable across renders
+   * (useCallback). `onComplete` is only used in timer mode.
+   */
+  currentTime?: () => number
   /** Called once the final line has finished holding on screen. */
   onComplete?: () => void
 }
@@ -16,10 +24,14 @@ const HOLD_AFTER_LAST_SECONDS = 2.8
  * one at a time, then `onComplete` fires after the last line holds. The
  * timeline plays from the moment the component mounts.
  */
-const LyricOverlay = ({ lines, onComplete }: LyricOverlayProps) => {
+const LyricOverlay = ({ lines, currentTime, onComplete }: LyricOverlayProps) => {
   const [index, setIndex] = useState(-1)
 
   useEffect(() => {
+    if (currentTime) {
+      return
+    }
+
     if (lines.length === 0) {
       const emptyTimer = window.setTimeout(() => onComplete?.(), 0)
       return () => window.clearTimeout(emptyTimer)
@@ -43,7 +55,26 @@ const LyricOverlay = ({ lines, onComplete }: LyricOverlayProps) => {
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer))
     }
-  }, [lines, onComplete])
+  }, [lines, currentTime, onComplete])
+
+  useEffect(() => {
+    if (!currentTime) {
+      return
+    }
+
+    let frame = 0
+    let last = -1
+    const tick = () => {
+      const next = getActiveLyricIndex(lines, currentTime())
+      if (next !== last) {
+        last = next
+        setIndex(next)
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [lines, currentTime])
 
   const current = index >= 0 ? lines[index] : null
 
