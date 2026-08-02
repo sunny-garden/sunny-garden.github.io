@@ -4,6 +4,7 @@ import styled, { keyframes } from 'styled-components'
 import letterClosedUrl from '../../../images/letter-closed.png'
 import letterOpenedUrl from '../../../images/letter-opened.png'
 import paperUrl from '../../../images/paper.png'
+import { playUiSound } from '../../services/soundEffects'
 
 type MailStage = 'closed' | 'opened' | 'letter'
 
@@ -14,20 +15,29 @@ const MailLetter = () => {
   const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   const openEnvelope = useCallback(() => {
+    playUiSound('select')
     setStage((current) => (current === 'closed' ? 'opened' : current))
   }, [])
 
   const showLetter = useCallback(() => {
+    playUiSound('transition')
     setStage((current) => (current === 'opened' ? 'letter' : current))
   }, [])
 
   const closeLetter = useCallback(() => {
+    playUiSound('click')
     setStage('opened')
     openerRef.current?.focus()
   }, [])
 
   const handleOpenedComplete = useCallback(() => {
-    setStage((current) => (current === 'opened' ? 'letter' : current))
+    setStage((current) => {
+      if (current !== 'opened') {
+        return current
+      }
+      playUiSound('transition')
+      return 'letter'
+    })
   }, [])
 
   useEffect(() => {
@@ -193,7 +203,7 @@ const MailGroup = styled(motion.div)`
   @media (max-width: 720px) {
     left: 64%;
     bottom: max(10vh, calc(env(safe-area-inset-bottom) + 42px));
-    width: clamp(82px, 24vw, 108px);
+    width: clamp(118px, 32vw, 150px);
   }
 `
 
@@ -216,7 +226,7 @@ const MailButton = styled(motion.button)`
   background: transparent;
   cursor: pointer;
   transform-origin: 50% 85%;
-  filter: drop-shadow(0 10px 14px rgba(31, 47, 40, 0.3));
+  filter: none;
   -webkit-tap-highlight-color: transparent;
 
   &:focus-visible {
@@ -251,6 +261,7 @@ const Scrim = styled.button`
   padding: 0;
   border: 0;
   background: transparent;
+  outline: 0;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 `
@@ -262,11 +273,11 @@ const PaperCard = styled(motion.div)`
   height: min(84svh, 780px);
   overflow: hidden;
   border-radius: 14px;
-  box-shadow: 0 34px 90px rgba(10, 20, 24, 0.5);
+  box-shadow: none;
 
   @media (max-width: 720px) {
-    width: 100vw;
-    height: 94svh;
+    width: min(145vw, 680px);
+    height: min(96svh, 900px);
     border-radius: 0;
   }
 `
@@ -278,6 +289,11 @@ const PaperImage = styled.img`
   height: 100%;
   object-fit: fill;
   pointer-events: none;
+
+  @media (max-width: 720px) {
+    transform: scaleX(1.16);
+    transform-origin: center;
+  }
 `
 
 const PaperText = styled(motion.div)`
@@ -293,8 +309,12 @@ const PaperText = styled(motion.div)`
   font-family: var(--serif);
   color: #20140a;
 
+  @media (max-width: 720px) {
+    inset: 9.5% 15.5% 11%;
+  }
+
   @media (max-width: 420px) {
-    inset: 9% 15% 9%;
+    inset: 10% 17% 12%;
   }
 `
 
@@ -323,23 +343,31 @@ const PaperBody = styled.div`
   p:last-child {
     text-align: right;
   }
+
+  @media (max-width: 420px) {
+    p {
+      margin-bottom: 0.76em;
+      font-size: clamp(0.78rem, 3.15vw, 0.92rem);
+      line-height: 1.38;
+    }
+  }
 `
 
 const CloseButton = styled.button`
-  position: absolute;
+  position: fixed;
   z-index: 3;
-  top: max(10px, env(safe-area-inset-top));
-  right: max(10px, env(safe-area-inset-right));
+  top: max(12px, calc(env(safe-area-inset-top) + 8px));
+  right: max(12px, calc(env(safe-area-inset-right) + 8px));
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   border: 0;
   border-radius: 50%;
   color: #ffffff;
   background: #111111;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-  font-size: 0.95rem;
+  box-shadow: none;
+  font-size: 0.68rem;
   line-height: 1;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;

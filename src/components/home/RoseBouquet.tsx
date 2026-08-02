@@ -5,6 +5,7 @@ import styled, { css, keyframes } from 'styled-components'
 import bouquetUrl from '../../../images/bouquet.png'
 import blueRoseUrl from '../../../images/blue-rose.png'
 import redRoseUrl from '../../../images/red-rose.png'
+import { playUiSound } from '../../services/soundEffects'
 import {
   ROSE_SLOTS,
   clampScreenDelta,
@@ -236,7 +237,13 @@ const RoseBouquet = ({ presented }: RoseBouquetProps) => {
   const [roses, setRoses] = useState(initialRoseStates)
   const reduceMotion = useReducedMotion()
 
+  const startDrag = (id: string) => {
+    playUiSound('click')
+    setActiveId(id)
+  }
+
   const finishWrapperDrag = (detail: DragEndDetail) => {
+    playUiSound(detail.moved ? 'save' : 'click')
     setWrapperTranslation(detail.translation)
     if (detail.moved) {
       wrapperHasMovedRef.current = true
@@ -246,6 +253,9 @@ const RoseBouquet = ({ presented }: RoseBouquetProps) => {
   }
 
   const finishRoseDrag = (detail: DragEndDetail) => {
+    if (detail.moved) {
+      playUiSound('save')
+    }
     setActiveId(null)
     if (!detail.moved) return
 
@@ -327,6 +337,7 @@ const RoseBouquet = ({ presented }: RoseBouquetProps) => {
     const currentTap = { time: now, point }
     const doubleTap = isDoubleTap(previousTap, currentTap)
     lastTapsRef.current[id] = currentTap
+    playUiSound(doubleTap ? 'transition' : 'select')
 
     setRoses((current) => {
       const rose = current[id]
@@ -470,7 +481,7 @@ const RoseBouquet = ({ presented }: RoseBouquetProps) => {
         translation={wrapperTranslation}
         rootRef={hostRef}
         elementRef={wrapperRef}
-        onDragStart={setActiveId}
+        onDragStart={startDrag}
         onDragEnd={finishWrapperDrag}
       />
       {ROSE_SLOTS.map((slot, index) => (
@@ -483,7 +494,7 @@ const RoseBouquet = ({ presented }: RoseBouquetProps) => {
           active={activeId === slot.id}
           rootRef={hostRef}
           registry={layerRegistryRef}
-          onDragStart={setActiveId}
+          onDragStart={startDrag}
           onDragEnd={finishRoseDrag}
           onTap={bloomRose}
         />

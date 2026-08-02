@@ -6,13 +6,15 @@ import MailLetter from '../components/home/MailLetter'
 import LyricOverlay from '../components/proposal/LyricOverlay'
 import { audioPaths } from '../data/proposalContent'
 import { songLyrics } from '../data/songLyrics'
+import { playUiSound } from '../services/soundEffects'
+import startButtonUrl from '../../images/start-button.png'
 
 type Stage = 'idle' | 'playing' | 'presented'
 
 /** Seconds before the song ends when the crossfade to background music starts. */
 const SONG_FADE_SECONDS = 2.5
 /** Volume the looping background music ramps up to. */
-const BG_MUSIC_VOLUME = 0.55
+const BG_MUSIC_VOLUME = 0.32
 
 /** Ramp an audio element's volume linearly from its current level to `target`. */
 const rampVolume = (audio: HTMLAudioElement, target: number, seconds: number) => {
@@ -57,6 +59,7 @@ const HomePage = () => {
       if (current !== 'idle') {
         return current
       }
+      playUiSound('transition')
       setPlayFailed(false)
       crossfadeStartedRef.current = false
       const audio = songRef.current
@@ -75,6 +78,31 @@ const HomePage = () => {
   }, [])
 
   const handleEnded = useCallback(() => setStage('presented'), [])
+
+  const handleSkip = useCallback(() => {
+    playUiSound('click')
+    const song = songRef.current
+    const bg = bgMusicRef.current
+
+    if (song) {
+      song.pause()
+      song.volume = 1
+    }
+    if (bg) {
+      bg.currentTime = 0
+      bg.volume = reduceMotion ? BG_MUSIC_VOLUME : 0
+      const playback = bg.play()
+      if (playback) {
+        playback.catch(() => undefined)
+      }
+      if (!reduceMotion) {
+        rampVolume(bg, BG_MUSIC_VOLUME, 1.5)
+      }
+    }
+
+    crossfadeStartedRef.current = true
+    setStage('presented')
+  }, [reduceMotion])
 
   const handleError = useCallback(() => {
     setPlayFailed(true)
@@ -163,6 +191,14 @@ const HomePage = () => {
         <SongOverlay>
           <Backdrop aria-hidden="true" />
           <LyricOverlay lines={songLyrics} currentTime={readAudioTime} />
+          <SkipButton
+            type="button"
+            onClick={handleSkip}
+            whileHover={reduceMotion ? undefined : { y: -2 }}
+            whileTap={reduceMotion ? undefined : { scale: 0.96 }}
+          >
+            Skip
+          </SkipButton>
         </SongOverlay>
       )}
 
@@ -179,15 +215,15 @@ const HomePage = () => {
       {stage === 'idle' && (
         <GiveButton
           type="button"
+          aria-label="Start the song"
           onClick={startSong}
           initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0.01 : 0.4, ease: 'easeOut' }}
-          whileHover={reduceMotion ? undefined : { y: -4, scale: 1.025 }}
-          whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+          animate={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: [0, -6, 0] }}
+          transition={reduceMotion ? { duration: 0.01 } : { opacity: { duration: 0.4, ease: 'easeOut' }, y: { duration: 2.4, ease: 'easeInOut', repeat: Infinity } }}
+          whileHover={reduceMotion ? undefined : { y: -8, scale: 1.045, rotate: -1.5 }}
+          whileTap={reduceMotion ? undefined : { scale: 0.92, rotate: 1.5 }}
         >
-          <ButtonRose aria-hidden="true">✦</ButtonRose>
-          Uhm
+          <StartButtonImage src={startButtonUrl} alt="" width="512" height="512" draggable={false} />
         </GiveButton>
       )}
       <CompletionStatus id="flower-status" role="status" aria-live="polite" aria-atomic="true">
@@ -352,13 +388,14 @@ const BouquetStage = styled(motion.div)`
 
     right: -2vw;
     left: auto;
-    bottom: 6.5vh;
-    width: min(68vw, 320px);
+    bottom: 16vh;
+    width: min(82vw, 390px);
   }
 
   @media (max-width: 420px) {
     right: -3vw;
-    width: min(70vw, 286px);
+    bottom: 14vh;
+    width: min(86vw, 350px);
   }
 
   @media (max-height: 620px) {
@@ -373,48 +410,36 @@ const BouquetStage = styled(motion.div)`
 const GiveButton = styled(motion.button)`
   position: absolute;
   z-index: 5;
-  right: clamp(24px, 13vw, 190px);
-  bottom: max(7vh, calc(env(safe-area-inset-bottom) + 24px));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  min-height: 58px;
-  padding: 12px 28px;
-  border: 1px solid rgba(255, 249, 224, 0.94);
+  right: clamp(16px, 11vw, 164px);
+  bottom: max(5.5vh, calc(env(safe-area-inset-bottom) + 18px));
+  width: clamp(108px, 16vw, 174px);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
   border-radius: 999px;
-  color: #173f2c;
-  background: #fff7dc;
-  box-shadow: 0 16px 38px rgba(96, 55, 22, 0.28);
-  font: inherit;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.015em;
-  white-space: nowrap;
+  background: transparent;
+  filter: drop-shadow(0 18px 24px rgba(96, 55, 22, 0.28));
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  transform-origin: 50% 70%;
 
   &:focus-visible {
     outline: 4px solid #b9233d;
-    outline-offset: 4px;
+    outline-offset: 6px;
   }
 
   @media (max-width: 720px) {
     right: auto;
     left: 50%;
-    bottom: max(4vh, calc(env(safe-area-inset-bottom) + 18px));
-    max-width: calc(100% - 32px);
+    bottom: max(3vh, calc(env(safe-area-inset-bottom) + 12px));
+    width: clamp(178px, 58vw, 240px);
     translate: -50% 0;
-    min-height: 56px;
-    padding: 14px 32px;
-    font-size: 1.05rem;
   }
 
   @media (max-width: 420px) {
-    padding: 14px 28px;
-    min-height: 52px;
+    width: clamp(168px, 62vw, 220px);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -422,17 +447,13 @@ const GiveButton = styled(motion.button)`
   }
 `
 
-const ButtonRose = styled.span`
-  display: inline-grid;
-  flex: 0 0 auto;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border-radius: 50%;
-  color: #fff7dc;
-  background: #bd2440;
-  font-size: 1rem;
-  line-height: 1;
+const StartButtonImage = styled.img`
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
 `
 
 const SongOverlay = styled.div`
@@ -446,6 +467,30 @@ const Backdrop = styled.div`
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 50% 60%, rgba(6, 18, 31, 0.28), rgba(6, 18, 31, 0.66));
+`
+
+const SkipButton = styled(motion.button)`
+  position: absolute;
+  z-index: 7;
+  right: max(16px, calc(env(safe-area-inset-right) + 12px));
+  bottom: max(16px, calc(env(safe-area-inset-bottom) + 12px));
+  min-height: 34px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 249, 224, 0.44);
+  border-radius: 999px;
+  color: #fff7dc;
+  background: rgba(23, 63, 44, 0.58);
+  box-shadow: 0 10px 28px rgba(6, 18, 31, 0.28);
+  backdrop-filter: blur(8px);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 `
 
 const CompletionStatus = styled.p`
