@@ -46,14 +46,52 @@ describe('MailLetter layout contract', () => {
     expect(source).toContain("import { captureLetterLocation } from '../../services/locationCapture'")
     expect(source).toContain('const locationRequestRef = useRef<Promise<unknown> | null>(null)')
     expect(source).toContain('const revealPendingRef = useRef(false)')
+  })
 
-    const revealStart = source.indexOf('const showLetter = useCallback(async () =>')
-    const revealEnd = source.indexOf('const closeLetter', revealStart)
-    const revealHandler = source.slice(revealStart, revealEnd)
+  it('includes a secret message stage in the mail stage type', () => {
+    expect(source).toContain("type MailStage = 'closed' | 'opened' | 'letter' | 'message'")
+  })
 
-    expect(revealStart).toBeGreaterThan(-1)
-    expect(revealHandler.indexOf('await locationRequestRef.current')).toBeGreaterThan(-1)
-    expect(revealHandler.indexOf("setStage((current) => (current === 'opened' ? 'letter' : current))"))
-      .toBeGreaterThan(revealHandler.indexOf('await locationRequestRef.current'))
+  it('imports the secret message button image', () => {
+    expect(source).toContain("import secretMessageButtonUrl from '../../../images/secret-message-button.png'")
+  })
+
+  it('imports the SecretMessageForm component', () => {
+    expect(source).toContain("import SecretMessageForm from './SecretMessageForm'")
+  })
+
+  it('renders a message button after the paper body', () => {
+    const paperBodyEnd = source.indexOf('</PaperBody>')
+    const messageButtonIdx = source.indexOf('MessageButtonWrapper', paperBodyEnd)
+    expect(paperBodyEnd).toBeGreaterThan(-1)
+    expect(messageButtonIdx).toBeGreaterThan(paperBodyEnd)
+  })
+
+  it('uses the message button image with proper dimensions', () => {
+    expect(source).toContain('width="1536"')
+    expect(source).toContain('height="1024"')
+    expect(source).toContain('secret-message-button.png')
+  })
+
+  it('has animated hover, tap, and float for the message button', () => {
+    expect(source).toContain('whileHover')
+    expect(source).toContain('whileTap')
+    expect(source).toContain('MessageButtonWrapper')
+  })
+
+  it('transitions to the message form on button click', () => {
+    expect(source).toContain("setStage('message')")
+    expect(source).toContain('openMessageForm')
+  })
+
+  it('closes the message form and returns focus to the button', () => {
+    expect(source).toContain("messageButtonRef.current?.focus()")
+    expect(source).toContain('closeMessageForm')
+  })
+
+  it('handles escape key for both letter and message overlays', () => {
+    expect(source).toContain("stage !== 'letter' && stage !== 'message'")
+    expect(source).toContain("stage === 'message'")
+    expect(source).toContain('closeMessageForm()')
   })
 })

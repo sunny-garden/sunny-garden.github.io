@@ -4,18 +4,22 @@ import styled, { keyframes } from 'styled-components'
 import letterClosedUrl from '../../../images/letter-closed.png'
 import letterOpenedUrl from '../../../images/letter-opened.png'
 import paperUrl from '../../../images/paper.png'
+import secretMessageButtonUrl from '../../../images/secret-message-button.png'
 import { captureLetterLocation } from '../../services/locationCapture'
 import { playUiSound } from '../../services/soundEffects'
+import SecretMessageForm from './SecretMessageForm'
 
-type MailStage = 'closed' | 'opened' | 'letter'
+type MailStage = 'closed' | 'opened' | 'letter' | 'message'
 
 const MailLetter = () => {
   const [stage, setStage] = useState<MailStage>('closed')
   const reduceMotion = useReducedMotion()
   const openerRef = useRef<HTMLButtonElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const messageButtonRef = useRef<HTMLButtonElement>(null)
   const locationRequestRef = useRef<Promise<unknown> | null>(null)
   const revealPendingRef = useRef(false)
+  const previousStageRef = useRef<MailStage>('closed')
 
   const openEnvelope = useCallback(() => {
     playUiSound('select')
@@ -44,25 +48,47 @@ const MailLetter = () => {
     openerRef.current?.focus()
   }, [])
 
+  const openMessageForm = useCallback(() => {
+    playUiSound('select')
+    previousStageRef.current = stage
+    setStage('message')
+  }, [stage])
+
+  const closeMessageForm = useCallback(() => {
+    playUiSound('click')
+    setStage(previousStageRef.current)
+    messageButtonRef.current?.focus()
+  }, [])
+
   const handleOpenedComplete = useCallback(() => {
     void showLetter()
   }, [showLetter])
 
   useEffect(() => {
-    if (stage !== 'letter') return
+    if (stage !== 'letter' && stage !== 'message') return
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeLetter()
+      if (event.key === 'Escape') {
+        if (stage === 'message') {
+          closeMessageForm()
+        } else {
+          closeLetter()
+        }
+      }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [stage, closeLetter])
+  }, [stage, closeLetter, closeMessageForm])
 
   useEffect(() => {
     if (stage === 'letter') {
       closeButtonRef.current?.focus()
     }
+    if (stage === 'message') {
+      previousStageRef.current = 'letter'
+    }
   }, [stage])
 
+  const hasOverlay = stage === 'letter' || stage === 'message'
   const letterOpen = stage === 'letter'
 
   return (
@@ -78,8 +104,8 @@ const MailLetter = () => {
             type="button"
             aria-label="Open the letter"
             aria-haspopup="dialog"
-            aria-expanded={letterOpen}
-            onClick={stage === 'closed' ? openEnvelope : showLetter}
+            aria-expanded={hasOverlay}
+            onClick={stage === 'closed' ? openEnvelope : stage === 'opened' ? showLetter : undefined}
             whileHover={reduceMotion ? undefined : { scale: 1.06 }}
             whileTap={reduceMotion ? undefined : { scale: 0.93 }}
           >
@@ -177,6 +203,22 @@ const MailLetter = () => {
                     watering can.
                   </p>
                 </PaperBody>
+                <MessageButtonWrapper
+                  initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                  animate={reduceMotion ? false : { opacity: 1, y: [0, -4, 0] }}
+                  transition={reduceMotion ? { duration: 0.01 } : { opacity: { duration: 0.4, ease: 'easeOut', delay: 0.55 }, y: { duration: 2.8, ease: 'easeInOut', repeat: Infinity, delay: 0.55 } }}
+                >
+                  <MessageButton
+                    ref={messageButtonRef}
+                    type="button"
+                    aria-label="Write a secret message"
+                    onClick={openMessageForm}
+                    whileHover={reduceMotion ? undefined : { y: -4, scale: 1.06 }}
+                    whileTap={reduceMotion ? undefined : { scale: 0.9 }}
+                  >
+                    <MessageButtonImage src={secretMessageButtonUrl} alt="" width="1536" height="1024" draggable={false} />
+                  </MessageButton>
+                </MessageButtonWrapper>
               </PaperText>
               <CloseButton
                 ref={closeButtonRef}
@@ -187,6 +229,13 @@ const MailLetter = () => {
                 ✕
               </CloseButton>
             </PaperCard>
+          </LetterLayer>
+        )}
+
+        {stage === 'message' && (
+          <LetterLayer key="message-layer">
+            <Scrim type="button" aria-label="Close the message form" onClick={closeMessageForm} />
+            <SecretMessageForm onBack={closeMessageForm} onSent={closeMessageForm} />
           </LetterLayer>
         )}
       </AnimatePresence>
@@ -268,7 +317,7 @@ const Scrim = styled.button`
   inset: 0;
   padding: 0;
   border: 0;
-  background: transparent;
+  background: rgba(6, 18, 31, 0.32);
   outline: 0;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -359,6 +408,49 @@ const PaperBody = styled.div`
       line-height: 1.38;
     }
   }
+`
+
+const MessageButtonWrapper = styled(motion.div)`
+  margin-top: 0.5em;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`
+
+const MessageButton = styled(motion.button)`
+  width: clamp(120px, 28vw, 172px);
+  aspect-ratio: 1.5;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 14px rgba(96, 55, 22, 0.22));
+  transform-origin: center;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 4px solid #b9233d;
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 420px) {
+    width: clamp(144px, 50vw, 200px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    transition: none;
+  }
+`
+
+const MessageButtonImage = styled.img`
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
 `
 
 const CloseButton = styled.button`

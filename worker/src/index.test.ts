@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 import worker from './index'
 
 const ORIGIN = 'https://sunny-garden.github.io'
-const ENDPOINT = 'https://letter-api.example.com/api/letter-location'
+const LOCATION_ENDPOINT = 'https://letter-api.example.com/api/letter-location'
+const MESSAGE_ENDPOINT = 'https://letter-api.example.com/api/secret-message'
 
 interface FakeDatabase {
   bindingValues: unknown[]
@@ -36,7 +37,7 @@ const callWorker = (request: Request, database = createDatabase()) => ({
   } as never),
 })
 
-const validPayload = {
+const validLocationPayload = {
   timestamp: '2026-08-02T12:00:00.000Z',
   status: 'granted',
   userAgent: 'Test Browser',
@@ -45,7 +46,7 @@ const validPayload = {
   accuracy: 18,
 }
 
-const post = (payload: unknown, origin = ORIGIN) => new Request(ENDPOINT, {
+const post = (endpoint: string, payload: unknown, origin: string = ORIGIN) => new Request(endpoint, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -56,7 +57,7 @@ const post = (payload: unknown, origin = ORIGIN) => new Request(ENDPOINT, {
 
 describe('letter location Worker', () => {
   it('accepts a preflight from the configured origin', async () => {
-    const { response } = callWorker(new Request(ENDPOINT, {
+    const { response } = callWorker(new Request(LOCATION_ENDPOINT, {
       method: 'OPTIONS',
       headers: { Origin: ORIGIN },
     }))
@@ -69,7 +70,7 @@ describe('letter location Worker', () => {
   })
 
   it('rejects requests from other origins', async () => {
-    const { response } = callWorker(post(validPayload, 'https://attacker.example'))
+    const { response } = callWorker(post(LOCATION_ENDPOINT, validLocationPayload, 'https://attacker.example'))
 
     expect((await response).status).toBe(403)
   })
@@ -83,13 +84,13 @@ describe('letter location Worker', () => {
   })
 
   it('rejects inconsistent granted payloads', async () => {
-    const missingLatitude = { ...validPayload, latitude: undefined }
+    const missingLatitude = { ...validLocationPayload, latitude: undefined }
 
-    expect((await callWorker(post(missingLatitude)).response).status).toBe(400)
+    expect((await callWorker(post(LOCATION_ENDPOINT, missingLatitude)).response).status).toBe(400)
   })
 
   it('rejects unknown payload fields', async () => {
-    expect((await callWorker(post({ ...validPayload, visitorName: 'secret' })).response).status)
+    expect((await callWorker(post(LOCATION_ENDPOINT, { ...validLocationPayload, visitorName: 'secret' })).response).status)
       .toBe(400)
   })
 
@@ -106,7 +107,7 @@ describe('letter location Worker', () => {
         cancelled = true
       },
     })
-    const request = new Request(ENDPOINT, {
+    const request = new Request(LOCATION_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Origin: ORIGIN },
       body,
@@ -121,7 +122,7 @@ describe('letter location Worker', () => {
   })
 
   it('inserts a valid payload using bound parameters', async () => {
-    const { database, response } = callWorker(post(validPayload))
+    const { database, response } = callWorker(post(LOCATION_ENDPOINT, validLocationPayload))
 
     const result = await response
     const body = await result.json() as { ok: boolean; id: string }
@@ -132,7 +133,7 @@ describe('letter location Worker', () => {
     expect(database.prepare).toHaveBeenCalledOnce()
     expect(database.bindingValues).toHaveLength(9)
     expect(database.bindingValues.slice(1)).toEqual([
-      validPayload.timestamp,
+      validLocationPayload.timestamp,
       expect.any(String),
       'granted',
       51.5,
@@ -145,7 +146,115 @@ describe('letter location Worker', () => {
 
   it('returns a generic response when D1 fails', async () => {
     const database = createDatabase(new Error('private SQL detail'))
-    const result = await callWorker(post(validPayload), database).response
+    const result = await callWorker(post(LOCATION_ENDPOINT, validLocationPayload), database).response
+
+    expect(result.status).toBe(500)
+    expect(await result.text()).not.toContain('private SQL detail')
+  })
+})
+
+describe('secret message Worker', () => {
+  it('accepts a preflight from the configured origin', async () => {
+    const { response } = callWorker(new Request(MESSAGE_ENDPOINT, {
+      method: 'OPTIONS',
+      headers: { Origin: ORIGIN },
+    }))
+
+    const result = await response
+    expect(result.status).toBe(204)
+    expect(result.headers.get('Access-Control-Allow-Origin')).toBe(ORIGIN)
+  })
+
+  it('rejects requests from other origins', async () => {
+    const { response } = callWorker(post(MESSAGE_ENDPOINT, { message: 'hello' }, 'https://attacker.example'))
+    expect((await response).status).toBe(403)
+  })
+
+  it('rejects GET requests', async () => {
+    const request = new Request(MESSAGE_ENDPOINT, {
+      method: 'GET',
+      headers: { Origin: ORIGIN },
+    })
+    expect((await callWorker(request).response).status).toBe(405)
+  })
+
+  it('rejects non-JSON content type', async () => {
+    const request = new Request(MESSAGE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain', Origin: ORIGIN },
+      body: 'hello',
+    })
+    expect((await callWorker(request).response).status).toBe(400)
+  })
+
+  it('rejects missing message field', async () => {
+    const { response } = callWorker(post(MESSAGE_ENDPOINT, {}))
+    expect((await response).status).toBe(400)
+  })
+
+  it('rejects non-string message', async () => {
+    const { response } = callWorker(post(MESSAGE_ENDPOINT, { message: 123 }))
+    expect((await response).status).toBe(400)
+  })
+
+  it('rejects unknown payload fields', async () => {
+    const { response } = callWorker(post(MESSAGE_ENDPOINT, { message: 'hi', extra: true }))
+    expect((await response).status).toBe(400)
+  })
+
+  it('rejects whitespace-only messages', async () => {
+    const { response } = callWorker(post(MESSAGE_ENDPOINT, { message: '   ' }))
+    expect((await response).status).toBe(400)
+  })
+
+  it('rejects empty messages', async () => {
+    const { response } = callWorker(post(MESSAGE_ENDPOINT, { message: '' }))
+    expect((await response).status).toBe(400)
+  })
+
+  it('rejects messages over 1000 characters', async () => {
+    const { response } = callWorker(post(MESSAGE_ENDPOINT, { message: 'a'.repeat(1001) }))
+    expect((await response).status).toBe(400)
+  })
+
+  it('rejects oversized bodies', async () => {
+    const body = new Request(MESSAGE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Origin: ORIGIN },
+      body: JSON.stringify({ message: 'x'.repeat(9000) }),
+    })
+    const { response } = callWorker(body)
+    expect((await response).status).toBe(400)
+  })
+
+  it('accepts a valid message and trims it', async () => {
+    const { database, response } = callWorker(post(MESSAGE_ENDPOINT, { message: '  hello world  ' }))
+
+    const result = await response
+    const body = await result.json() as { ok: boolean; id: string }
+
+    expect(result.status).toBe(201)
+    expect(body.ok).toBe(true)
+    expect(body.id).toEqual(expect.any(String))
+    expect(database.prepare).toHaveBeenCalledOnce()
+    expect(database.bindingValues).toHaveLength(3)
+    expect(database.bindingValues[0]).toEqual(expect.any(String))
+    expect(database.bindingValues[1]).toBe('hello world')
+    expect(database.bindingValues[2]).toEqual(expect.any(String))
+  })
+
+  it('accepts a message at exactly 1000 characters', async () => {
+    const message = 'a'.repeat(1000)
+    const { database, response } = callWorker(post(MESSAGE_ENDPOINT, { message }))
+
+    const result = await response
+    expect(result.status).toBe(201)
+    expect(database.bindingValues[1]).toBe(message)
+  })
+
+  it('returns a generic response when D1 fails', async () => {
+    const database = createDatabase(new Error('private SQL detail'))
+    const result = await callWorker(post(MESSAGE_ENDPOINT, { message: 'hello' }), database).response
 
     expect(result.status).toBe(500)
     expect(await result.text()).not.toContain('private SQL detail')
