@@ -21,7 +21,6 @@ describe('SecretMessageForm', () => {
 
   it('has submitting state that prevents duplicate sends', () => {
     expect(source).toContain("stage === 'submitting'")
-    expect(source).toContain('Sending...')
   })
 
   it('shows an error message on failure', () => {
@@ -40,9 +39,26 @@ describe('SecretMessageForm', () => {
     expect(source).toContain('Your secret message has been delivered.')
   })
 
+  it('uses the requested secret message title text', () => {
+    expect(source).toContain('Secret Message! 🤫💙')
+    expect(source).not.toContain('Secret Message! 🤫💙🤍')
+  })
+
   it('has a Back button that calls onBack', () => {
     expect(source).toContain('onClick={onBack}')
-    expect(source).toContain('BackButton')
+    expect(source).toContain('BackButtonImage')
+  })
+
+  it('optimizes image buttons for mobile width', () => {
+    expect(source).toContain('width: min(150%, 660px);')
+    expect(source).toContain('width: min(180%, 680px);')
+    expect(source).toContain('gap: 0;')
+    expect(source).toContain('width: clamp(260px, 68vw, 430px);')
+    expect(source).toContain('width: clamp(190px, 50vw, 310px);')
+    expect(source).toContain('margin-left: clamp(-112px, -16vw, -56px);')
+    expect(source).toContain('margin-left: clamp(-124px, -26vw, -72px);')
+    expect(source).toContain('translate: clamp(28px, 5vw, 56px) 0;')
+    expect(source).toContain('translate: clamp(34px, 9vw, 68px) 0;')
   })
 
   it('imports the paper background image', () => {

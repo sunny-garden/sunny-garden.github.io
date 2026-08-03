@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import styled from 'styled-components'
 import paperUrl from '../../../images/paper.png'
+import backButtonUrl from '../../../images/back-button.png'
+import sendButtonUrl from '../../../images/send-button.png'
 import { submitSecretMessage } from '../../services/secretMessages'
 
 type FormStage = 'editing' | 'submitting' | 'error' | 'sent'
@@ -110,7 +112,7 @@ const SecretMessageForm = ({ onBack, onSent }: SecretMessageFormProps) => {
     >
       <PaperBg src={paperUrl} alt="" width="1024" height="1024" draggable={false} />
       <FormContent>
-        <FormTitle>Secret Message</FormTitle>
+        <FormTitle>Secret Message! 🤫💙</FormTitle>
         <TextareaWrapper>
           <MessageTextarea
             ref={textareaRef}
@@ -136,16 +138,22 @@ const SecretMessageForm = ({ onBack, onSent }: SecretMessageFormProps) => {
         )}
 
         <ButtonRow>
-          <BackButton type="button" onClick={onBack} disabled={stage === 'submitting'}>
-            Back
-          </BackButton>
-          <SendButton
+          <BackButtonImage
+            type="button"
+            onClick={onBack}
+            disabled={stage === 'submitting'}
+            aria-label="Go back"
+          >
+            <img src={backButtonUrl} alt="" draggable={false} />
+          </BackButtonImage>
+          <SendButtonImage
             type="button"
             onClick={() => void handleSend()}
             disabled={!canSend || stage === 'submitting'}
+            aria-label="Send message"
           >
-            {stage === 'submitting' ? 'Sending...' : 'Send'}
-          </SendButton>
+            <img src={sendButtonUrl} alt="" draggable={false} />
+          </SendButtonImage>
         </ButtonRow>
       </FormContent>
     </FormPaper>
@@ -202,6 +210,7 @@ const FormContent = styled.div`
 
 const FormTitle = styled.h2`
   margin: 0 0 0.55em;
+  font-family: 'MedievalSharp', cursive;
   font-size: clamp(1.2rem, 4.3vw, 1.8rem);
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -260,34 +269,47 @@ const CharCount = styled.div<{ $overLimit: boolean }>`
 
 const ButtonRow = styled.div`
   display: flex;
-  gap: 10px;
-  margin-top: 12px;
-  width: 100%;
+  gap: 6px;
+  margin-top: 14px;
+  width: min(150%, 660px);
+  justify-content: center;
+
+  @media (max-width: 420px) {
+    gap: 0;
+    width: min(180%, 680px);
+  }
 `
 
-const SendButton = styled.button`
-  flex: 1.5;
-  min-height: 44px;
-  padding: 8px 16px;
+const SendButtonImage = styled.button`
+  flex: 0 0 auto;
+  width: clamp(260px, 68vw, 430px);
+  margin-left: clamp(-112px, -16vw, -56px);
+  aspect-ratio: 3;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
-  background: #3d2408;
-  color: #fff7db;
-  font-family: var(--serif);
-  font-size: clamp(0.82rem, 2.6vw, 0.96rem);
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  border-radius: 12px;
+  background: transparent;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.18s, opacity 0.18s;
+  filter: drop-shadow(0 4px 8px rgba(96, 55, 22, 0.18));
+  transition: opacity 0.18s, filter 0.18s;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
 
   &:hover:not(:disabled) {
-    background: #5a3a18;
+    filter: drop-shadow(0 6px 12px rgba(96, 55, 22, 0.28));
   }
 
   &:active:not(:disabled) {
-    background: #2a1806;
+    transform: scale(0.95);
   }
 
   &:disabled {
@@ -298,32 +320,44 @@ const SendButton = styled.button`
   &:focus-visible {
     outline: 4px solid #b9233d;
     outline-offset: 3px;
+  }
+
+  @media (max-width: 420px) {
+    width: clamp(240px, 84vw, 430px);
+    margin-left: clamp(-124px, -26vw, -72px);
   }
 `
 
-const BackButton = styled.button`
-  flex: 1;
-  min-height: 44px;
-  padding: 8px 16px;
-  border: 1px solid rgba(61, 36, 8, 0.3);
-  border-radius: 999px;
+const BackButtonImage = styled.button`
+  flex: 0 0 auto;
+  width: clamp(190px, 50vw, 310px);
+  translate: clamp(28px, 5vw, 56px) 0;
+  aspect-ratio: 3;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
   background: transparent;
-  color: #3d2408;
-  font-family: var(--serif);
-  font-size: clamp(0.82rem, 2.6vw, 0.96rem);
-  font-weight: 600;
-  letter-spacing: 0.03em;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.18s, opacity 0.18s;
+  filter: drop-shadow(0 4px 8px rgba(96, 55, 22, 0.18));
+  transition: opacity 0.18s, filter 0.18s;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
 
   &:hover:not(:disabled) {
-    background: rgba(61, 36, 8, 0.08);
+    filter: drop-shadow(0 6px 12px rgba(96, 55, 22, 0.28));
   }
 
   &:active:not(:disabled) {
-    background: rgba(61, 36, 8, 0.14);
+    transform: scale(0.95);
   }
 
   &:disabled {
@@ -334,6 +368,11 @@ const BackButton = styled.button`
   &:focus-visible {
     outline: 4px solid #b9233d;
     outline-offset: 3px;
+  }
+
+  @media (max-width: 420px) {
+    width: clamp(180px, 62vw, 310px);
+    translate: clamp(34px, 9vw, 68px) 0;
   }
 `
 

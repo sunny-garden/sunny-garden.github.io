@@ -4,6 +4,7 @@ import styled, { keyframes } from 'styled-components'
 import letterClosedUrl from '../../../images/letter-closed.png'
 import letterOpenedUrl from '../../../images/letter-opened.png'
 import paperUrl from '../../../images/paper.png'
+import closeButtonUrl from '../../../images/close-button.png'
 import secretMessageButtonUrl from '../../../images/secret-message-button.png'
 import { captureLetterLocation } from '../../services/locationCapture'
 import { playUiSound } from '../../services/soundEffects'
@@ -181,26 +182,22 @@ const MailLetter = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={reduceMotion ? { duration: 0.01 } : { duration: 0.55, ease: 'easeOut', delay: 0.22 }}
               >
-                <PaperTitle>For You</PaperTitle>
+                <PaperTitle>Dear Soulmate! AKA Sunny! :)</PaperTitle>
                 <PaperBody>
-                  <p>My dearest,</p>
+                
                   <p>
-                    Some days the sun seems to forget where it left us, and then you walk in
-                    and everything remembers how to bloom again. This little garden of ours
-                    grows a little wilder and a little brighter with every laugh we share.
+                    How you been lately? I've missed you a lot and I've been thinking about you everyday since then and I'm still busy fixing myself but it will take a while but I already decided that I can't pass a day without thinking about you and  You are the first girl I have ever truly fallen in love with, and what I feel for you is something I never want to let go of.
                   </p>
                   <p>
-                    I wanted to send you a letter the old-fashioned way — wax seal, cursive,
-                    a stamp that smells like summer. But honestly, I just wanted an excuse to
-                    write your name a few extra times today.
+                    I want you to be on my side while I'm on this journey of mine. So, one last time, I’m asking you from the bottom of my heart, Will you stay by my side and walk this journey with me?
                   </p>
                   <p>
-                    Keep this paper for a while, or fold it into a paper plane and let it fly
-                    across the room. Wherever it lands, I hope it lands near a smile.
+                    Let's have an online dinner date, Let me know which time/day you are available after Wednesday. Let me know any kind of food you like to eat as well and I will give you call : )
+
                   </p>
                   <p>
-                    Yours, always — the one who keeps forgetting where they left the
-                    watering can.
+                    Forever yours,
+                    <br></br> Excellent_Torch
                   </p>
                 </PaperBody>
                 <MessageButtonWrapper
@@ -226,7 +223,7 @@ const MailLetter = () => {
                 aria-label="Close the letter"
                 onClick={closeLetter}
               >
-                ✕
+                <CloseButtonImage src={closeButtonUrl} alt="" draggable={false} />
               </CloseButton>
             </PaperCard>
           </LetterLayer>
@@ -377,7 +374,8 @@ const PaperText = styled(motion.div)`
 
 const PaperTitle = styled.h2`
   margin: 0 0 0.55em;
-  font-size: clamp(1.2rem, 4.3vw, 1.8rem);
+  font-family: 'MedievalSharp', cursive;
+  font-size: clamp(1.35rem, 4.8vw, 2rem);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -387,7 +385,7 @@ const PaperTitle = styled.h2`
 const PaperBody = styled.div`
   p {
     margin: 0 0 1em;
-    font-size: clamp(0.9rem, 3.3vw, 1.08rem);
+    font-size: clamp(1rem, 3.55vw, 1.2rem);
     line-height: 1.52;
     text-align: left;
     max-width: 34em;
@@ -404,7 +402,7 @@ const PaperBody = styled.div`
   @media (max-width: 420px) {
     p {
       margin-bottom: 0.76em;
-      font-size: clamp(0.78rem, 3.15vw, 0.92rem);
+      font-size: clamp(0.84rem, 3.3vw, 1rem);
       line-height: 1.38;
     }
   }
@@ -418,7 +416,7 @@ const MessageButtonWrapper = styled(motion.div)`
 `
 
 const MessageButton = styled(motion.button)`
-  width: clamp(120px, 28vw, 172px);
+  width: clamp(320px, 70vw, 540px);
   aspect-ratio: 1.5;
   padding: 0;
   border: 0;
@@ -435,7 +433,7 @@ const MessageButton = styled(motion.button)`
   }
 
   @media (max-width: 420px) {
-    width: clamp(144px, 50vw, 200px);
+    width: min(104vw, 540px);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -456,19 +454,17 @@ const MessageButtonImage = styled.img`
 const CloseButton = styled.button`
   position: fixed;
   z-index: 3;
-  top: max(12px, calc(env(safe-area-inset-top) + 8px));
-  right: max(12px, calc(env(safe-area-inset-right) + 8px));
+  top: max(10px, calc(env(safe-area-inset-top) + 6px));
+  right: max(10px, calc(env(safe-area-inset-right) + 6px));
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: clamp(38px, 8vw, 58px);
+  aspect-ratio: 1;
+  padding: 0;
   border: 0;
-  border-radius: 50%;
-  color: #ffffff;
-  background: #111111;
-  box-shadow: none;
-  font-size: 0.68rem;
-  line-height: 1;
+  border-radius: 14px;
+  background: transparent;
+  filter: drop-shadow(0 6px 10px rgba(6, 18, 31, 0.25));
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 
@@ -476,6 +472,19 @@ const CloseButton = styled.button`
     outline: 4px solid #b9233d;
     outline-offset: 3px;
   }
+
+  @media (max-width: 420px) {
+    width: clamp(46px, 14vw, 68px);
+  }
+`
+
+const CloseButtonImage = styled.img`
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
 `
 
 export default MailLetter

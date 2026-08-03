@@ -19,13 +19,13 @@ describe('MailLetter layout contract', () => {
     expect(source).toContain('height: min(96svh, 900px);')
     expect(source).toContain('transform: scaleX(1.16);')
     expect(source).toContain('inset: 10% 17% 12%;')
-    expect(source).toContain('font-size: clamp(0.78rem, 3.15vw, 0.92rem);')
+    expect(source).toContain('font-size: clamp(0.84rem, 3.3vw, 1rem);')
     expect(source).toContain('position: fixed;')
-    expect(source).toContain('top: max(12px, calc(env(safe-area-inset-top) + 8px));')
-    expect(source).toContain('right: max(12px, calc(env(safe-area-inset-right) + 8px));')
-    expect(source).toContain('width: 22px;')
-    expect(source).toContain('height: 22px;')
-    expect(source).toContain('font-size: 0.68rem;')
+    expect(source).toContain('top: max(10px, calc(env(safe-area-inset-top) + 6px));')
+    expect(source).toContain('right: max(10px, calc(env(safe-area-inset-right) + 6px));')
+    expect(source).toContain('width: clamp(38px, 8vw, 58px);')
+    expect(source).toContain('width: clamp(46px, 14vw, 68px);')
+    expect(source).toContain('CloseButtonImage')
     expect(source).toContain('box-shadow: none;')
     expect(source).toContain('filter: none;')
     expect(source).toContain('outline: 0;')
@@ -56,6 +56,11 @@ describe('MailLetter layout contract', () => {
     expect(source).toContain("import secretMessageButtonUrl from '../../../images/secret-message-button.png'")
   })
 
+  it('imports and renders the close button image', () => {
+    expect(source).toContain("import closeButtonUrl from '../../../images/close-button.png'")
+    expect(source).toContain('<CloseButtonImage src={closeButtonUrl}')
+  })
+
   it('imports the SecretMessageForm component', () => {
     expect(source).toContain("import SecretMessageForm from './SecretMessageForm'")
   })
@@ -71,6 +76,16 @@ describe('MailLetter layout contract', () => {
     expect(source).toContain('width="1536"')
     expect(source).toContain('height="1024"')
     expect(source).toContain('secret-message-button.png')
+  })
+
+  it('uses an oversized mobile secret message button', () => {
+    expect(source).toContain('width: clamp(320px, 70vw, 540px);')
+    expect(source).toContain('width: min(104vw, 540px);')
+  })
+
+  it('uses larger paper text sizing', () => {
+    expect(source).toContain('font-size: clamp(1.35rem, 4.8vw, 2rem);')
+    expect(source).toContain('font-size: clamp(1rem, 3.55vw, 1.2rem);')
   })
 
   it('has animated hover, tap, and float for the message button', () => {
